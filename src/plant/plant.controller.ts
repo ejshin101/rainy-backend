@@ -15,9 +15,4 @@ export class PlantController {
   createPlant(@Body() plantData: CreatePlantDto): Promise<Plant> {
     return this.plantService.create(plantData);
   }
-
-  @Get('/list')
-  getPlantList() {
-
-  }
 }
