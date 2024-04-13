@@ -9,7 +9,4 @@ export class Plant extends BaseEntity {
 
   @Column({ type: 'varchar', length: 50 })
   PLNT_TYPE_KOR: string;
-
-  @Column({ type: 'varchar', length: 50 })
-  PLNT_TYPE_ENG: string;
 }
