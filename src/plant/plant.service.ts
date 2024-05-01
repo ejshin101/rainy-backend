@@ -2,6 +2,8 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Plant } from './plant.entity';
 import { CreatePlantDto } from './create-plant.dto';
+import { pagingResponseDto } from '../common/dto/pagingResponse.dto';
+import { pagingRequestDto } from '../common/dto/pagingRequest.dto';
 
 @Injectable()
 export class PlantService {
@@ -9,8 +11,19 @@ export class PlantService {
     @Inject('PLANT_REPOSITORY')
     private plantRepository: Repository<Plant>,
   ) {}
-  async findAll(): Promise<Plant[]> {
-    return await this.plantRepository.find({});
+  async findAll(page: pagingRequestDto): Promise<pagingResponseDto<Plant>> {
+    const total = await this.plantRepository.count();
+    const resultData = await this.plantRepository.find({
+      take: page.pageSize,
+      skip: page.getOffset(),
+    });
+    return new pagingResponseDto(
+      '000',
+      total,
+      page.pageNo,
+      page.pageSize,
+      resultData,
+    );
   }
 
   async find(id): Promise<Plant> {

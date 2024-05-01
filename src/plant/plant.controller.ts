@@ -1,14 +1,25 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { PlantService } from './plant.service';
 import { Plant } from './plant.entity';
 import { CreatePlantDto } from './create-plant.dto';
+import { pagingRequestDto } from '../common/dto/pagingRequest.dto';
+import { pagingResponseDto } from '../common/dto/pagingResponse.dto';
 
 @Controller('plant')
 export class PlantController {
   constructor(private readonly plantService: PlantService) {}
   @Get()
-  findAll(): Promise<Plant[]> {
-    return this.plantService.findAll();
+  findAll(@Query() page: pagingRequestDto): Promise<pagingResponseDto<Plant>> {
+    return this.plantService.findAll(page);
   }
 
   @Get('/:id')

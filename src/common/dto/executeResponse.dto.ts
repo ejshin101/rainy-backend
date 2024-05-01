@@ -1,9 +1,10 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class executeResponseDto<T> {
-    responseCode: String;
-    successCnt: Number;
+  responseCode: string;
+  successCnt: number;
 
-    constructor(responseCode: String, successCnt: Number) {
-        this.responseCode = responseCode;
-        this.successCnt = successCnt;
-    }
+  constructor(responseCode: string, successCnt: number) {
+    this.responseCode = responseCode;
+    this.successCnt = successCnt;
+  }
 }
