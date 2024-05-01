@@ -1,7 +1,7 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({
-  name: 'plnt_type',
+  name: 'PLNT_TYPE',
 })
 export class Plant extends BaseEntity {
   @PrimaryGeneratedColumn()
