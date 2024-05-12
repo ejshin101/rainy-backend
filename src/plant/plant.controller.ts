@@ -11,15 +11,17 @@ import {
 import { PlantService } from './plant.service';
 import { Plant } from './plant.entity';
 import { CreatePlantDto } from './create-plant.dto';
-import { pagingRequestDto } from '../common/dto/pagingRequest.dto';
 import { pagingResponseDto } from '../common/dto/pagingResponse.dto';
+import { UpdatePlantDto } from './update-plant.dto';
 
 @Controller('plant')
 export class PlantController {
   constructor(private readonly plantService: PlantService) {}
   @Get()
-  findAll(@Query() page: pagingRequestDto): Promise<pagingResponseDto<Plant>> {
-    return this.plantService.findAll(page);
+  findAll(
+    @Query() createPlantDto: CreatePlantDto,
+  ): Promise<pagingResponseDto<Plant>> {
+    return this.plantService.findAll(createPlantDto);
   }
 
   @Get('/:id')
@@ -35,7 +37,7 @@ export class PlantController {
   @Put('/:id')
   updatePlant(
     @Param('id') id: number,
-    @Body() plantData: CreatePlantDto,
+    @Body() plantData: UpdatePlantDto,
   ): Promise<Plant> {
     return this.plantService.update(id, plantData);
   }

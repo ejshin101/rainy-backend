@@ -1,12 +1,12 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({
   name: 'PLNT_TYPE',
 })
 export class Plant extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  PLNT_TYPE_SNO: number;
+  @PrimaryColumn({ type: 'int' })
+  plntTypeSno: number;
 
   @Column({ type: 'varchar', length: 50 })
-  PLNT_TYPE_KOR: string;
+  plntTypeKor: string;
 }

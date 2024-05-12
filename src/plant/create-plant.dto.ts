@@ -1,7 +1,12 @@
-export class CreatePlantDto {
-  constructor(PLNT_TYPE_KOR: string) {
-    this.PLNT_TYPE_KOR = PLNT_TYPE_KOR;
+import { pagingRequestDto } from '../common/dto/pagingRequest.dto';
+
+export class CreatePlantDto extends pagingRequestDto {
+  constructor(plntTypeSno: number, plntTypeKor: string) {
+    super();
+    this.plntTypeSno = plntTypeSno;
+    this.plntTypeKor = plntTypeKor;
   }
 
-  readonly PLNT_TYPE_KOR: string;
+  readonly plntTypeSno: number;
+  readonly plntTypeKor: string;
 }

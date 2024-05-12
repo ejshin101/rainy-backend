@@ -1,9 +1,9 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { Plant } from './plant.entity';
 import { CreatePlantDto } from './create-plant.dto';
 import { pagingResponseDto } from '../common/dto/pagingResponse.dto';
-import { pagingRequestDto } from '../common/dto/pagingRequest.dto';
+import { UpdatePlantDto } from './update-plant.dto';
 
 @Injectable()
 export class PlantService {
@@ -11,37 +11,45 @@ export class PlantService {
     @Inject('PLANT_REPOSITORY')
     private plantRepository: Repository<Plant>,
   ) {}
-  async findAll(page: pagingRequestDto): Promise<pagingResponseDto<Plant>> {
+  async findAll(
+    createPlantDto: CreatePlantDto,
+  ): Promise<pagingResponseDto<Plant>> {
     const total = await this.plantRepository.count();
     const resultData = await this.plantRepository.find({
-      take: page.pageSize,
-      skip: page.getOffset(),
+      take: createPlantDto.pageSize,
+      where: {
+        plntTypeKor: Like(`%${createPlantDto.plntTypeKor}%`),
+      },
+      skip: createPlantDto.getOffset(),
     });
     return new pagingResponseDto(
       '000',
       total,
-      page.pageNo,
-      page.pageSize,
+      createPlantDto.pageNo,
+      createPlantDto.pageSize,
       resultData,
     );
   }
 
   async find(id): Promise<Plant> {
-    return await this.plantRepository.findOneBy({ PLNT_TYPE_SNO: id });
+    return await this.plantRepository.findOneBy({ plntTypeSno: id });
   }
 
   async create(createPlantDto: CreatePlantDto): Promise<Plant> {
-    const { PLNT_TYPE_KOR } = createPlantDto;
+    let { plntTypeSno } = createPlantDto;
+    const { plntTypeKor } = createPlantDto;
+    plntTypeSno = (await this.plantRepository.count()) + 1;
     const plant = await this.plantRepository.create({
-      PLNT_TYPE_KOR,
+      plntTypeSno,
+      plntTypeKor,
     });
 
     await this.plantRepository.save(plant);
     return plant;
   }
 
-  async update(id, updateEntity: CreatePlantDto): Promise<Plant> {
-    const plant = await this.plantRepository.findOneBy({ PLNT_TYPE_SNO: id });
+  async update(id, updateEntity: UpdatePlantDto): Promise<Plant> {
+    const plant = await this.plantRepository.findOneBy({ plntTypeSno: id });
     const newEntity = {
       ...plant,
       ...updateEntity,
@@ -50,7 +58,7 @@ export class PlantService {
   }
 
   async delete(id): Promise<void> {
-    const result = await this.plantRepository.delete({ PLNT_TYPE_SNO: id });
+    const result = await this.plantRepository.delete({ plntTypeSno: id });
     if (result.affected === 0) {
       throw new NotFoundException(`${id} is not exist`);
     }
