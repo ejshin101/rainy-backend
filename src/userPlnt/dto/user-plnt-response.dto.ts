@@ -1,6 +1,6 @@
 import { pagingRequestDto } from '../../common/dto/pagingRequest.dto';
 
-export class UserPlntResponseDto extends pagingRequestDto{
+export class UserPlntResponseDto extends pagingRequestDto {
   constructor(
     userPlntsno: number,
     userPlntNm: string = '',
