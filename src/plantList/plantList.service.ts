@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import * as convert from 'xml-js';
 import { Repository } from 'typeorm';
 import { Plant } from '../plant/plant.entity';
-import { CreatePlantDto } from '../plant/create-plant.dto';
+import { CreatePlantDto } from '../plant/dto/create-plant.dto';
 import axios from 'axios';
 
 

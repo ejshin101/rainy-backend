@@ -1,10 +1,10 @@
-import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({
   name: 'USER_PLNT',
 })
 export class UserPlnt extends BaseEntity {
-  @PrimaryColumn({ type: 'int' })
+  @PrimaryGeneratedColumn()
   userPlntSno: number;
 
   @Column({ type: 'varchar', length: 50 })
@@ -14,7 +14,7 @@ export class UserPlnt extends BaseEntity {
   plntTypeSno: number;
 
   @Column({ type: 'date' })
-  plntAdptDt: string;
+  plntAdptDt: Date;
 
   @Column({ type: 'int' })
   plntAdptPrice: number;
@@ -25,11 +25,11 @@ export class UserPlnt extends BaseEntity {
   @Column({ type: 'varchar', length: 1000 })
   plntDesc: string;
 
-  @Column({ type: 'datetime' })
-  crteDtt: string;
+  @Column({ type: 'datetime', default: () => 'NOW()' })
+  crteDtt: Date;
 
-  @Column({ type: 'datetime' })
-  editDtt: string;
+  @Column({ type: 'datetime', nullable: true })
+  editDtt: Date;
 
   @Column({ type: 'int' })
   userSno: number;

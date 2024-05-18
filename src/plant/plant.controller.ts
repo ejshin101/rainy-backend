@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common';
 import { PlantService } from './plant.service';
 import { Plant } from './plant.entity';
-import { CreatePlantDto } from './create-plant.dto';
+import { CreatePlantDto } from './dto/create-plant.dto';
 import { pagingResponseDto } from '../common/dto/pagingResponse.dto';
-import { UpdatePlantDto } from './update-plant.dto';
+import { UpdatePlantDto } from './dto/update-plant.dto';
 
 @Controller('plant')
 export class PlantController {

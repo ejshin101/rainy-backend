@@ -1,9 +1,9 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Like, Repository } from 'typeorm';
 import { Plant } from './plant.entity';
-import { CreatePlantDto } from './create-plant.dto';
+import { CreatePlantDto } from './dto/create-plant.dto';
 import { pagingResponseDto } from '../common/dto/pagingResponse.dto';
-import { UpdatePlantDto } from './update-plant.dto';
+import { UpdatePlantDto } from './dto/update-plant.dto';
 
 @Injectable()
 export class PlantService {
@@ -11,17 +11,26 @@ export class PlantService {
     @Inject('PLANT_REPOSITORY')
     private plantRepository: Repository<Plant>,
   ) {}
+
   async findAll(
     createPlantDto: CreatePlantDto,
   ): Promise<pagingResponseDto<Plant>> {
-    const total = await this.plantRepository.count();
-    const resultData = await this.plantRepository.find({
-      take: createPlantDto.pageSize,
-      where: {
-        plntTypeKor: Like(`%${createPlantDto.plntTypeKor}%`),
-      },
-      skip: createPlantDto.getOffset(),
-    });
+    const total = await this.plantRepository
+      .createQueryBuilder('plant')
+      .where('plant.plntTypeKor like :plntTypeKor', {
+        plntTypeKor: `%${createPlantDto.plntTypeKor}%`,
+      })
+      .getCount();
+
+    const resultData = await this.plantRepository
+      .createQueryBuilder('plant')
+      .select()
+      .take(createPlantDto.pageSize)
+      .where('plant.plntTypeKor like :plntTypeKor', {
+        plntTypeKor: `%${createPlantDto.plntTypeKor}%`,
+      })
+      .skip(createPlantDto.getOffset())
+      .getMany();
     return new pagingResponseDto(
       '000',
       total,

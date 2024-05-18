@@ -5,10 +5,10 @@ import { GetAllUsersRequestDto } from "./dto/GetAllUsersRequestDto";
 import {pagingResponseDto} from "../common/dto/pagingResponse.dto";
 import {UserResponseDto} from "./dto/UserResponseDto";
 import {Plant} from "../plant/plant.entity";
-import {CreatePlantDto} from "../plant/create-plant.dto";
+import {CreatePlantDto} from "../plant/dto/create-plant.dto";
 import {executeResponseDto} from "../common/dto/executeResponse.dto";
 import {CreateUserDto} from "./dto/CreateUserDto";
-import {UpdatePlantDto} from "../plant/update-plant.dto";
+import {UpdatePlantDto} from "../plant/dto/update-plant.dto";
 import {UpdateUserDto} from "./dto/UpdateUserDto";
 
 @Controller('users')
