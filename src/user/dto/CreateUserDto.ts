@@ -7,14 +7,14 @@ export class CreateUserDto {
         userPswd: string,
         userCd: UserCodeEnum
     ) {
-        this.USER_NM = userNm;
-        this.USER_EMAIL = userEmail;
-        this.USER_PSWD = userPswd;
-        this.USER_CD = userCd;
+        this.userNm = userNm;
+        this.userEmail = userEmail;
+        this.userPswd = userPswd;
+        this.userCd = userCd;
     }
 
-    USER_NM: string;
-    USER_EMAIL: string;
-    USER_PSWD: string;
-    USER_CD: UserCodeEnum;
+    userNm: string;
+    userEmail: string;
+    userPswd: string;
+    userCd: UserCodeEnum;
 }

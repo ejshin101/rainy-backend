@@ -11,6 +11,7 @@ import {executeResponseDto} from "../common/dto/executeResponse.dto";
 import TrueFalseCodeEnum from "../common/enum/TrueFalseCode.enum";
 import UserStatusCodeEnum from "../common/enum/user/UserStatusCode.enum";
 import {UpdateUserDto} from "./dto/UpdateUserDto";
+import UserCodeEnum from "../common/enum/user/UserCode.enum";
 
 @Injectable()
 export class UserService {
@@ -20,34 +21,27 @@ export class UserService {
     ) {}
 
     async findAll(getAllUsersRequestDto: GetAllUsersRequestDto): Promise<pagingResponseDto<UserResponseDto>> {
-        const total = await this.userRepository.count({
-            where: [{
-                USER_NM: Like(`%${getAllUsersRequestDto.keyword}%`),
-            },{
-                USER_EMAIL: Like(`%${getAllUsersRequestDto.keyword}%`),
-            }]
-        });
-        const resultData: UserResponseDto[] = await this.userRepository.find({
-            take: getAllUsersRequestDto.pageSize,
-            where: [{
-                USER_NM: Like(`%${getAllUsersRequestDto.keyword}%`),
-            },{
-                USER_EMAIL: Like(`%${getAllUsersRequestDto.keyword}%`),
-            }],
-            skip: getAllUsersRequestDto.getOffset(),
-            select: {
-                USER_NM: true,
-                USER_SNO: true,
-                USER_EMAIL: true,
-                USER_CD: true,
-                USER_STAT_CD: true,
-                DEL_TF: true
-            }
-        });
+        const count: any = await this.userRepository.createQueryBuilder('user')
+            .where('user.USER_NM LIKE :keyword', { keyword: `%${getAllUsersRequestDto.keyword}%` })
+            .orWhere('user.USER_EMAIL LIKE :keyword', { keyword: `%${getAllUsersRequestDto.keyword}%` })
+            .select('COUNT(*)', 'total')
+            .getRawOne();
+
+        const resultData: UserResponseDto[] = await this.userRepository.createQueryBuilder('user')
+            .where('user.USER_NM LIKE :keyword', { keyword: `%${getAllUsersRequestDto.keyword}%` })
+            .orWhere('user.USER_EMAIL LIKE :keyword', { keyword: `%${getAllUsersRequestDto.keyword}%` })
+            .select('user.USER_SNO', 'userSno')
+            .addSelect('user.USER_EMAIL', 'userEmail')
+            .addSelect('user.USER_CD', 'userCd')
+            .addSelect('user.USER_STAT_CD', 'userStatCd')
+            .addSelect('user.DEL_TF', 'delTf')
+            .take(getAllUsersRequestDto.pageSize)
+            .skip(getAllUsersRequestDto.getOffset())
+            .getRawMany();
 
         return new pagingResponseDto(
             ResponseCodeEnum.success,
-            total,
+            count.total,
             getAllUsersRequestDto.pageNo,
             getAllUsersRequestDto.pageSize,
             resultData,
@@ -55,35 +49,36 @@ export class UserService {
     }
 
     async find(sno: number): Promise<UserResponseDto> {
-        return await this.userRepository.findOne({
-            where: { USER_SNO: sno },
-            select: {
-                USER_NM: true,
-                USER_SNO: true,
-                USER_EMAIL: true,
-                USER_CD: true,
-                USER_STAT_CD: true,
-                DEL_TF: true
-            }
-        });
+        return await this.userRepository.createQueryBuilder('user')
+            .where('user.USER_SNO = :sno', { sno })
+            .select('user.USER_SNO', 'userSno')
+            .addSelect('user.USER_EMAIL', 'userEmail')
+            .addSelect('user.USER_CD', 'userCd')
+            .addSelect('user.USER_STAT_CD', 'userStatCd')
+            .addSelect('user.DEL_TF', 'delTf')
+            .getRawOne();
     }
 
     async create(user: CreateUserDto) : Promise<executeResponseDto> {
-        const result = await this.userRepository.save({
-            USER_NM: user.USER_NM,
-            USER_EMAIL: user.USER_EMAIL,
-            USER_PSWD: user.USER_PSWD,
-            USER_CD: user.USER_CD,
-            CRTE_DTT: new Date(),
-            DEL_TF: TrueFalseCodeEnum.isFalse,
-            USER_STAT_CD: UserStatusCodeEnum.active,
-            USER_USE_TF: TrueFalseCodeEnum.isTrue
-        });
+        const result = await this.userRepository
+            .createQueryBuilder()
+            .insert()
+            .into(User)
+            .values(
+                {
+                    USER_NM: user.userNm,
+                    USER_EMAIL: user.userEmail,
+                    USER_PSWD: user.userPswd,
+                    USER_USE_TF: TrueFalseCodeEnum.isTrue,
+                    USER_CD: user.userCd,
+                    USER_STAT_CD: UserStatusCodeEnum.active,
+                    CRTE_DTT: new Date(),
+                    DEL_TF: TrueFalseCodeEnum.isFalse
+                }
+            )
+            .execute()
 
-        return new executeResponseDto(
-            ResponseCodeEnum.success,
-            result.USER_SNO ? 1 : 0
-        );
+        return new executeResponseDto(ResponseCodeEnum.success, 1)
     }
 
     async update(sno: number, user: UpdateUserDto): Promise<executeResponseDto> {
@@ -91,7 +86,13 @@ export class UserService {
             ...user,
             EDIT_DTT: new Date()
         }
-        const result = await this.userRepository.update(sno, updateData);
+
+        const result = await this.userRepository
+            .createQueryBuilder()
+            .update(User)
+            .set(updateData)
+            .where("USER_SNO = :sno", { sno })
+            .execute()
 
         return new executeResponseDto(
             ResponseCodeEnum.success,
@@ -100,11 +101,18 @@ export class UserService {
     }
 
     async delete(sno: number) : Promise<executeResponseDto> {
-        const result = await this.userRepository.delete(sno);
+        const result = await this.userRepository
+            .createQueryBuilder()
+            .update(User)
+            .set({
+                DEL_TF: TrueFalseCodeEnum.isTrue
+            })
+            .where("USER_SNO = :sno", { sno })
+            .execute()
 
         return new executeResponseDto(
             ResponseCodeEnum.success,
             result.affected
-        )
+        );
     }
 }
