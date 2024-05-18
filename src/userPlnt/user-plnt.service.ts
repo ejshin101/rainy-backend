@@ -1,20 +1,12 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-  DeleteResult,
-  InsertQueryBuilder,
-  InsertResult,
-  Repository,
-  SelectQueryBuilder,
-  UpdateResult,
-} from 'typeorm';
+import { Repository } from 'typeorm';
 import { UserPlnt } from './user-plnt.entity';
 import { pagingResponseDto } from '../common/dto/pagingResponse.dto';
 import { UserPlntResponseDto } from './dto/user-plnt-response.dto';
 import { CreateUserPlntDto } from './dto/create-user-plnt.dto';
 import ResponseCodeEnum from '../common/enum/ResponseCode.enum';
 import { UpdateUserPlntDto } from './dto/update-user-plnt.dto';
-import { plainToClass } from 'class-transformer';
-import { Plant } from '../plant/plant.entity';
+import { executeResponseDto } from '../common/dto/executeResponse.dto';
 
 @Injectable()
 export class UserPlntService {
@@ -56,7 +48,9 @@ export class UserPlntService {
     return await this.userPlntRepository.findOneBy({ userPlntSno: id });
   }
 
-  async create(createUserPlntDto: CreateUserPlntDto): Promise<UserPlnt> {
+  async create(
+    createUserPlntDto: CreateUserPlntDto,
+  ): Promise<executeResponseDto> {
     const {
       userPlntNm,
       plntTypeSno,
@@ -66,70 +60,50 @@ export class UserPlntService {
       plntDesc,
       userSno,
     } = createUserPlntDto;
-    // const result = await this.userPlntRepository
-    //   .createQueryBuilder('userPlnt')
-    //   .insert()
-    //   .into('USER_PLNT')
-    //   .values({
-    //     'userPlnt.user_plnt_nm': userPlntNm,
-    //     'userPlnt.plnt_type_sno': plntTypeSno,
-    //     'userPlnt.plnt_adpt_dt': plntAdptDt,
-    //     'userPlnt.plnt_adpt_price': plntAdptPrice,
-    //     'userPlnt.plnt_adpt_lctn_nm': plntAdptLctnNm,
-    //     'userPlnt.plnt_desc': plntDesc,
-    //     'userPlnt.user_sno': userSno,
-    //   })
-    //   .execute();
-    const result = await this.userPlntRepository.create({
-      userPlntNm,
-      plntTypeSno,
-      plntAdptDt,
-      plntAdptPrice,
-      plntAdptLctnNm,
-      plntDesc,
-      userSno,
-    });
-
-    await this.userPlntRepository.save(result);
-    return result;
+    await this.userPlntRepository
+      .createQueryBuilder()
+      .insert()
+      .into(UserPlnt)
+      .values({
+        userPlntNm: userPlntNm,
+        plntTypeSno: plntTypeSno,
+        plntAdptDt: plntAdptDt,
+        plntAdptPrice: plntAdptPrice,
+        plntAdptLctnNm: plntAdptLctnNm,
+        plntDesc: plntDesc,
+        userSno: userSno,
+      })
+      .execute();
+    return new executeResponseDto(ResponseCodeEnum.success, 1);
   }
-  async update(id, updateEntity: UpdateUserPlntDto): Promise<UserPlnt> {
-    // const userPlnt = this.find(id);
-    // let updateResult;
-    // if (userPlnt !== null) {
-    //   updateResult = this.userPlntRepository
-    //     .createQueryBuilder('userPlnt')
-    //     .update('userPlnt')
-    //     .set({
-    //       'userPlnt.userPlntNm': updateEntity.userPlntNm,
-    //       'userPlnt.plntTypeSno': updateEntity.plntTypeSno,
-    //       'userPlnt.plntAdptDt': updateEntity.plntAdptDt,
-    //       'userPlnt.plntAdptPrice': updateEntity.plntAdptPrice,
-    //       'userPlnt.plntAdptLctnNm': updateEntity.plntAdptLctnNm,
-    //       'userPlnt.plntDesc': updateEntity.plntDesc,
-    //     });
-    // }
-    const userPlnt = await this.userPlntRepository.findOneBy({
-      userPlntSno: id,
-    });
-    const newEntity = {
-      ...userPlnt,
+  async update(
+    id,
+    updateEntity: UpdateUserPlntDto,
+  ): Promise<executeResponseDto> {
+    const updateData = {
       ...updateEntity,
+      editDtt: new Date(),
     };
-    return await this.userPlntRepository.save(newEntity);
+
+    const result = await this.userPlntRepository
+      .createQueryBuilder()
+      .update(UserPlnt)
+      .set(updateData)
+      .where('user_plnt_sno = :id', { id })
+      .execute();
+
+    return new executeResponseDto(ResponseCodeEnum.success, result.affected);
   }
 
-  // async delete(id): Promise<void> {
-  //   const result = await this.userPlntRepository.delete({ userPlntSno: id });
-  //   if (result.affected === 0) {
-  //     throw new NotFoundException(`${id} is not exist`);
-  //   }
-  // }
-
-  async delete(id): Promise<void> {
-    const result = await this.userPlntRepository.delete({ userPlntSno: id });
+  async delete(id): Promise<executeResponseDto> {
+    const result = await this.userPlntRepository
+      .createQueryBuilder()
+      .delete()
+      .where({ userPlntSno: id })
+      .execute();
     if (result.affected === 0) {
       throw new NotFoundException(`${id} is not exist`);
     }
+    return new executeResponseDto(ResponseCodeEnum.success, result.affected);
   }
 }

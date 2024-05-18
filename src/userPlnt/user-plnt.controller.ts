@@ -19,6 +19,7 @@ import {
 import { CreateUserPlntDto } from './dto/create-user-plnt.dto';
 import { UpdateUserPlntDto } from './dto/update-user-plnt.dto';
 import { User } from '../user/user.entity';
+import { executeResponseDto } from '../common/dto/executeResponse.dto';
 
 @Controller('userplnt')
 export class UserPlntController {
@@ -37,7 +38,7 @@ export class UserPlntController {
   }
 
   @Post()
-  createPlant(@Body() createUserPlntDto: CreateUserPlntDto): Promise<UserPlnt> {
+  createPlant(@Body() createUserPlntDto: CreateUserPlntDto): Promise<executeResponseDto> {
     return this.userPlntService.create(createUserPlntDto);
   }
 
@@ -45,12 +46,12 @@ export class UserPlntController {
   updatePlant(
     @Param('id') id: number,
     @Body() updateUserPlntDto: UpdateUserPlntDto,
-  ): Promise<UserPlnt> {
+  ): Promise<executeResponseDto> {
     return this.userPlntService.update(id, updateUserPlntDto);
   }
 
   @Delete('/:id')
-  delete(@Param('id') id: number): Promise<void> {
+  delete(@Param('id') id: number): Promise<executeResponseDto> {
     return this.userPlntService.delete(id);
   }
 }
