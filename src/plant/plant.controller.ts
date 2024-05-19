@@ -14,7 +14,7 @@ import { CreatePlantDto } from './dto/create-plant.dto';
 import { pagingResponseDto } from '../common/dto/pagingResponse.dto';
 import { UpdatePlantDto } from './dto/update-plant.dto';
 
-@Controller('plant')
+@Controller('plants')
 export class PlantController {
   constructor(private readonly plantService: PlantService) {}
   @Get()

@@ -20,5 +20,4 @@ export class UpdateUserPlntDto {
   readonly plntAdptPrice: number;
   readonly plntAdptLctnNm: string;
   readonly plntDesc: string;
-  private editDtt: string;
 }
