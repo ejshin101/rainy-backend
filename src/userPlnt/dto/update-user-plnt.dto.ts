@@ -1,6 +1,5 @@
 export class UpdateUserPlntDto {
   constructor(
-    userPlntsno: number,
     userPlntNm: string,
     plntTypeSno: number,
     plntAdptDt: Date,
@@ -21,4 +20,5 @@ export class UpdateUserPlntDto {
   readonly plntAdptPrice: number;
   readonly plntAdptLctnNm: string;
   readonly plntDesc: string;
+  private editDtt: string;
 }
