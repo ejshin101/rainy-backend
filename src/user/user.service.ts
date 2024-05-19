@@ -23,13 +23,13 @@ export class UserService {
     async findAll(getAllUsersRequestDto: GetAllUsersRequestDto): Promise<pagingResponseDto<UserResponseDto>> {
         const count: any = await this.userRepository.createQueryBuilder('user')
             .where('user.USER_NM LIKE :keyword', { keyword: `%${getAllUsersRequestDto.keyword}%` })
-            .orWhere('user.USER_EMAIL LIKE :keyword', { keyword: `%${getAllUsersRequestDto.keyword}%` })
+            .andWhere('user.DEL_TF = "F"')
             .select('COUNT(*)', 'total')
             .getRawOne();
 
         const resultData: UserResponseDto[] = await this.userRepository.createQueryBuilder('user')
             .where('user.USER_NM LIKE :keyword', { keyword: `%${getAllUsersRequestDto.keyword}%` })
-            .orWhere('user.USER_EMAIL LIKE :keyword', { keyword: `%${getAllUsersRequestDto.keyword}%` })
+            .andWhere('user.DEL_TF = "F"')
             .select('user.USER_SNO', 'userSno')
             .addSelect('user.USER_EMAIL', 'userEmail')
             .addSelect('user.USER_CD', 'userCd')
