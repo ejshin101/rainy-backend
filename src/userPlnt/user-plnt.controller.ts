@@ -20,44 +20,44 @@ import { executeResponseDto } from '../common/dto/executeResponse.dto';
 export class UserPlntController {
   constructor(private readonly userPlntService: UserPlntService) {}
 
-  @Get('/:userId/plants')
+  @Get('/:userSno/plants')
   findAll(
-    @Param('userId') userId: number,
+    @Param('userSno') userSno: number,
     @Query() userPlntResponseDto: UserPlntResponseDto,
   ): Promise<pagingResponseDto<UserPlnt>> {
-    return this.userPlntService.findAll(userId, userPlntResponseDto);
+    return this.userPlntService.findAll(userSno, userPlntResponseDto);
   }
 
-  @Get('/:userId/plants/:plantId')
+  @Get('/:userSno/plants/:userPlntSno')
   findById(
-    @Param('userId') userId: number,
-    @Param('plantId') plantId: number,
+    @Param('userSno') userSno: number,
+    @Param('userPlntSno') userPlntSno: number,
   ): Promise<UserPlnt> {
-    return this.userPlntService.find(userId, plantId);
+    return this.userPlntService.find(userSno, userPlntSno);
   }
 
-  @Post('/:userId/plants')
-  createPlant(
-    @Param('userId') userId: number,
+  @Post('/:userSno/plants')
+  create(
+    @Param('userSno') userSno: number,
     @Body() createUserPlntDto: CreateUserPlntDto,
   ): Promise<executeResponseDto> {
-    return this.userPlntService.create(userId, createUserPlntDto);
+    return this.userPlntService.create(userSno, createUserPlntDto);
   }
 
-  @Put('/:userId/plants/:plantId')
-  updatePlant(
-    @Param('userId') userId: number,
-    @Param('plantId') plantId: number,
+  @Put('/:userSno/plants/:userPlntSno')
+  update(
+    @Param('userSno') userSno: number,
+    @Param('userPlntSno') userPlntSno: number,
     @Body() updateUserPlntDto: UpdateUserPlntDto,
   ): Promise<executeResponseDto> {
-    return this.userPlntService.update(userId, plantId, updateUserPlntDto);
+    return this.userPlntService.update(userSno, userPlntSno, updateUserPlntDto);
   }
 
-  @Delete('/:userId/plants/:plantId')
+  @Delete('/:userSno/plants/:userPlntSno')
   delete(
-    @Param('userId') userId: number,
-    @Param('plantId') plantId: number,
+    @Param('userSno') userSno: number,
+    @Param('userPlntSno') userPlntSno: number,
   ): Promise<executeResponseDto> {
-    return this.userPlntService.delete(userId, plantId);
+    return this.userPlntService.delete(userSno, userPlntSno);
   }
 }

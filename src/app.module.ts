@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import * as process from 'process';
 import { PlantListModule } from './plantList/plantList.module';
 import { UserPlntModule } from './userPlnt/user-plnt.module';
+import { PlntJrnlModule } from './plntJrnl/plnt-jrnl.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UserPlntModule } from './userPlnt/user-plnt.module';
     UserModule,
     PlantListModule,
     UserPlntModule,
+    PlntJrnlModule,
   ],
 })
 export class AppModule {}

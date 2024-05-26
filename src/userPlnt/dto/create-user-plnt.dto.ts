@@ -7,7 +7,6 @@ export class CreateUserPlntDto {
     plntAdptPrice: number,
     plntAdptLctnNm: string,
     plntDesc: string,
-    userSno: number,
   ) {
     this.userPlntNm = userPlntNm;
     this.plntTypeSno = plntTypeSno;
@@ -15,7 +14,6 @@ export class CreateUserPlntDto {
     this.plntAdptPrice = plntAdptPrice;
     this.plntAdptLctnNm = plntAdptLctnNm;
     this.plntDesc = plntDesc;
-    this.userSno = userSno;
   }
   readonly userPlntNm: string;
   readonly plntTypeSno: number;
@@ -23,5 +21,4 @@ export class CreateUserPlntDto {
   readonly plntAdptPrice: number;
   readonly plntAdptLctnNm: string;
   readonly plntDesc: string;
-  readonly userSno: number;
 }

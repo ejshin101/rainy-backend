@@ -16,7 +16,7 @@ export class UserPlntService {
   ) {}
 
   async findAll(
-    userId,
+    userSno,
     userPlntResponseDto: UserPlntResponseDto,
   ): Promise<pagingResponseDto<UserPlnt>> {
     const total = await this.userPlntRepository
@@ -25,7 +25,7 @@ export class UserPlntService {
         'userPlnt.userPlntNm like :userPlntNm and userPlnt.userSno = :userSno',
         {
           userPlntNm: `%${userPlntResponseDto.userPlntNm}%`,
-          userSno: userId,
+          userSno: userSno,
         },
       )
       .getCount();
@@ -38,7 +38,7 @@ export class UserPlntService {
         'userPlnt.userPlntNm like :userPlntNm and userPlnt.userSno = :userSno',
         {
           userPlntNm: `%${userPlntResponseDto.userPlntNm}%`,
-          userSno: userId,
+          userSno: userSno,
         },
       )
       .skip(userPlntResponseDto.getOffset())
@@ -53,22 +53,22 @@ export class UserPlntService {
     );
   }
 
-  async find(userId, plantId): Promise<UserPlnt> {
+  async find(userSno, userPlntSno): Promise<UserPlnt> {
     return await this.userPlntRepository
       .createQueryBuilder('userPlnt')
       .select()
       .where(
         'userPlnt.userPlntSno like :userPlntSno and userPlnt.userSno = :userSno',
         {
-          userPlntSno: plantId,
-          userSno: userId,
+          userPlntSno: userPlntSno,
+          userSno: userSno,
         },
       )
       .getOne();
   }
 
   async create(
-    userId,
+    userSno,
     createUserPlntDto: CreateUserPlntDto,
   ): Promise<executeResponseDto> {
     const {
@@ -90,18 +90,18 @@ export class UserPlntService {
         plntAdptPrice: plntAdptPrice,
         plntAdptLctnNm: plntAdptLctnNm,
         plntDesc: plntDesc,
-        userSno: userId,
+        userSno: userSno,
       })
       .execute();
     return new executeResponseDto(ResponseCodeEnum.success, 1);
   }
   async update(
-    userId,
-    plantId,
-    updateEntity: UpdateUserPlntDto,
+    userSno,
+    userPlntSno,
+    UpdateUserPlntDto: UpdateUserPlntDto,
   ): Promise<executeResponseDto> {
     const updateData = {
-      ...updateEntity,
+      ...UpdateUserPlntDto,
       editDtt: new Date(),
     };
 
@@ -109,23 +109,23 @@ export class UserPlntService {
       .createQueryBuilder()
       .update(UserPlnt)
       .set(updateData)
-      .where('user_plnt_sno = :plantId and user_sno = :userId', {
-        plantId: plantId,
-        userId: userId,
+      .where('user_plnt_sno = :userPlntSno and user_sno = :userSno', {
+        userPlntSno: userPlntSno,
+        userSno: userSno,
       })
       .execute();
 
     return new executeResponseDto(ResponseCodeEnum.success, result.affected);
   }
 
-  async delete(userId, plantId): Promise<executeResponseDto> {
+  async delete(userSno, userPlntSno): Promise<executeResponseDto> {
     const result = await this.userPlntRepository
       .createQueryBuilder()
       .delete()
-      .where({ userPlntSno: plantId, userSno: userId })
+      .where({ userPlntSno: userPlntSno, userSno: userSno })
       .execute();
     if (result.affected === 0) {
-      throw new NotFoundException(`${plantId} is not exist`);
+      throw new NotFoundException(`${userPlntSno} is not exist`);
     }
     return new executeResponseDto(ResponseCodeEnum.success, result.affected);
   }
