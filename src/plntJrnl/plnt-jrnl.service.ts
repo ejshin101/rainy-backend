@@ -33,7 +33,12 @@ export class PlntJrnlService {
 
     const resultData = await this.plntJrnlRepository
       .createQueryBuilder('plntJrnl')
-      .select()
+      .select('plntJrnl.*') // 기존 컬럼 선택
+      // row_number()를 사용하여 행 번호 추가. 서브쿼리 형태로 삽입합니다.
+      .addSelect(
+        'ROW_NUMBER () OVER (ORDER BY plntJrnl.plntJrnlSno ASC)',
+        'row_num',
+      )
       .take(plntJrnlResponseDto.pageSize)
       .where(
         'plntJrnl.userSno = :userSno and plntJrnl.plntJrnlTtle like :plntJrnlTtle and plntJrnl.plntJrnlCtnt like :plntJrnlCtnt',
@@ -44,7 +49,7 @@ export class PlntJrnlService {
         },
       )
       .skip(plntJrnlResponseDto.getOffset())
-      .getMany();
+      .getRawMany();
 
     return new pagingResponseDto(
       ResponseCodeEnum.success,

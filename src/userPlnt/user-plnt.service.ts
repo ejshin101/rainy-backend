@@ -32,7 +32,11 @@ export class UserPlntService {
 
     const resultData = await this.userPlntRepository
       .createQueryBuilder('userPlnt')
-      .select()
+      .select('userPlnt.*')
+      .addSelect(
+        'ROW_NUMBER () OVER (ORDER BY userPlnt.userPlntSno ASC)',
+        'row_num',
+      )
       .take(userPlntResponseDto.pageSize)
       .where(
         'userPlnt.userPlntNm like :userPlntNm and userPlnt.userSno = :userSno',
@@ -42,7 +46,7 @@ export class UserPlntService {
         },
       )
       .skip(userPlntResponseDto.getOffset())
-      .getMany();
+      .getRawMany();
 
     return new pagingResponseDto(
       ResponseCodeEnum.success,
