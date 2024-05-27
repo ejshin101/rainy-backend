@@ -33,11 +33,17 @@ export class PlntJrnlService {
 
     const resultData = await this.plntJrnlRepository
       .createQueryBuilder('plntJrnl')
-      .select('plntJrnl.*') // 기존 컬럼 선택
-      // row_number()를 사용하여 행 번호 추가. 서브쿼리 형태로 삽입합니다.
+      .select('plntJrnl.plntJrnlSno', 'plntJrnlSno')
+      .select('plntJrnl.userPlntSno', 'userPlntSno')
+      .addSelect('plntJrnl.userSno', 'userSno')
+      .addSelect('plntJrnl.plntJrnlDt', 'plntJrnlDt')
+      .addSelect('plntJrnl.plntJrnlTtle', 'plntJrnlTtle')
+      .addSelect('plntJrnl.plntJrnlCtnt', 'plntJrnlCtnt')
+      .addSelect('plntJrnl.crteDtt', 'crteDtt')
+      .addSelect('plntJrnl.editDtt', 'editDtt')
       .addSelect(
         'ROW_NUMBER () OVER (ORDER BY plntJrnl.plntJrnlSno ASC)',
-        'row_num',
+        'rowNum',
       )
       .take(plntJrnlResponseDto.pageSize)
       .where(

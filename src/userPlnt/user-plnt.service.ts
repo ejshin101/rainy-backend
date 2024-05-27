@@ -32,10 +32,19 @@ export class UserPlntService {
 
     const resultData = await this.userPlntRepository
       .createQueryBuilder('userPlnt')
-      .select('userPlnt.*')
+      .select('userPlnt.userPlntSno', 'userPlntSno')
+      .addSelect('userPlnt.userPlntNm', 'userPlntNm')
+      .addSelect('userPlnt.plntTypeSno', 'plntTypeSno')
+      .addSelect('userPlnt.plntAdptDt', 'plntAdptDt')
+      .addSelect('userPlnt.plntAdptPrice', 'plntAdptPrice')
+      .addSelect('userPlnt.plntAdptLctnNm', 'plntAdptLctnNm')
+      .addSelect('userPlnt.plntDesc', 'plntDesc')
+      .addSelect('userPlnt.crteDtt', 'crteDtt')
+      .addSelect('userPlnt.editDtt', 'editDtt')
+      .addSelect('userPlnt.userSno', 'userSno')
       .addSelect(
         'ROW_NUMBER () OVER (ORDER BY userPlnt.userPlntSno ASC)',
-        'row_num',
+        'rowNum',
       )
       .take(userPlntResponseDto.pageSize)
       .where(
