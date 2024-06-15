@@ -16,6 +16,7 @@ export const databaseProviders = [
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: false,
         namingStrategy: new SnakeNamingStrategy(),
+        logging: true, //로그에 쿼리문이 보이게 한다.
       });
 
       return dataSource.initialize();

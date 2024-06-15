@@ -16,7 +16,7 @@ export class User extends BaseEntity {
     @Column({ type: 'varchar', length: 50 })
     USER_EMAIL: string;
 
-    @Column({ type: 'varchar', length: 50 })
+    @Column({ type: 'varchar', length: 100 })
     USER_PSWD: string;
 
     @Column({ type: 'enum', enum: [TrueFalseCodeEnum.isFalse, TrueFalseCodeEnum.isTrue] })
@@ -42,4 +42,5 @@ export class User extends BaseEntity {
 
     @Column({ type: 'enum', enum: [TrueFalseCodeEnum.isFalse, TrueFalseCodeEnum.isTrue] })
     DEL_TF: TrueFalseCodeEnum;
+
 }

@@ -6,6 +6,7 @@ import * as process from 'process';
 import { PlantListModule } from './plantList/plantList.module';
 import { UserPlntModule } from './userPlnt/user-plnt.module';
 import { PlntJrnlModule } from './plntJrnl/plnt-jrnl.module';
+import { AuthModule } from './user/auth/auth.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PlntJrnlModule } from './plntJrnl/plnt-jrnl.module';
     PlantListModule,
     UserPlntModule,
     PlntJrnlModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
