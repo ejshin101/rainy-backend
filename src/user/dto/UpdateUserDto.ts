@@ -11,18 +11,18 @@ export class UpdateUserDto {
         userCd: UserCodeEnum,
         userStatCd: UserStatusCodeEnum
     ) {
-        this.USER_NM = userNm;
-        this.USER_EMAIL = userEmail;
-        this.USER_PSWD = userPswd;
-        this.USER_USE_TF = userUseTf;
-        this.USER_CD = userCd;
-        this.USER_STAT_CD = userStatCd;
+        this.userNm = userNm;
+        this.userEmail = userEmail;
+        this.userPswd = userPswd;
+        this.userUseTf = userUseTf;
+        this.userCd = userCd;
+        this.userStatCd = userStatCd;
     }
 
-    USER_NM: string;
-    USER_EMAIL: string;
-    USER_PSWD: string;
-    USER_USE_TF: TrueFalseCodeEnum;
-    USER_CD: UserCodeEnum;
-    USER_STAT_CD: UserStatusCodeEnum;
+    userNm: string;
+    userEmail: string;
+    userPswd: string;
+    userUseTf: TrueFalseCodeEnum;
+    userCd: UserCodeEnum;
+    userStatCd: UserStatusCodeEnum;
 }

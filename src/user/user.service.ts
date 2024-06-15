@@ -83,7 +83,12 @@ export class UserService {
 
     async update(sno: number, user: UpdateUserDto): Promise<executeResponseDto> {
         const updateData = {
-            ...user,
+            ...(user.userNm && { USER_NM: user.userNm }),
+            ...(user.userEmail && { USER_EMAIL: user.userEmail }),
+            ...(user.userPswd && { USER_PSWD: user.userPswd }),
+            ...(user.userUseTf && { USER_USE_TF: user.userUseTf }),
+            ...(user.userCd && { USER_CD: user.userCd }),
+            ...(user.userStatCd && { USER_STAT_CD: user.userStatCd }),
             EDIT_DTT: new Date()
         }
 
