@@ -43,4 +43,10 @@ export class User extends BaseEntity {
     @Column({ type: 'enum', enum: [TrueFalseCodeEnum.isFalse, TrueFalseCodeEnum.isTrue] })
     DEL_TF: TrueFalseCodeEnum;
 
+    @Column({ type: 'varchar', nullable: true })
+    REFRESH_TOKEN : string;
+
+    @Column({ type: 'datetime', nullable: true })
+    REFRESH_TOKEN_EXP: Date;
+
 }

@@ -12,12 +12,15 @@ import UserStatusCodeEnum from '../common/enum/user/UserStatusCode.enum';
 import { UpdateUserDto } from './dto/UpdateUserDto';
 import { UserAuthDto } from './dto/UserAuthDto';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
+import process from 'process';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject('USER_REPOSITORY')
     private userRepository: Repository<User>,
+    private readonly configService: ConfigService,
   ) {}
 
   async findAll(
@@ -81,6 +84,21 @@ export class UserService {
       .getRawOne();
   }
 
+  async findBySno(sno: number): Promise<UserAuthDto> {
+    return await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.USER_SNO = :sno', { sno })
+      .select('user.USER_SNO', 'userSno')
+      .addSelect('user.USER_EMAIL', 'userEmail')
+      .addSelect('user.USER_PSWD', 'userPswd')
+      .addSelect('user.USER_CD', 'userCd')
+      .addSelect('user.USER_STAT_CD', 'userStatCd')
+      .addSelect('user.REFRESH_TOKEN', 'refreshToken')
+      .addSelect('user.REFRESH_TOKEN_EXP', 'refreshTokenExp')
+      .addSelect('user.DEL_TF', 'delTf')
+      .getRawOne();
+  }
+
   async create(user: CreateUserDto): Promise<executeResponseDto> {
     await this.transformPassword(user);
     const result = await this.userRepository
@@ -139,5 +157,78 @@ export class UserService {
   async transformPassword(user: CreateUserDto): Promise<void> {
     user.userPswd = await bcrypt.hash(user.userPswd, 10);
     return Promise.resolve();
+  }
+
+  async setCurrentRefreshToken(refreshToken: string, sno: number) {
+    const currentRefreshToken =
+      await this.getCurrentHashedRefreshToken(refreshToken);
+    const currentRefreshTokenExp = await this.getCurrentRefreshTokenExp();
+
+    const updateRefresh = {
+      REFRESH_TOKEN: currentRefreshToken,
+      REFRESH_TOKEN_EXP: currentRefreshTokenExp,
+    };
+
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set(updateRefresh)
+      .where('USER_SNO = :sno', { sno })
+      .execute();
+  }
+
+  async getCurrentHashedRefreshToken(refreshToken: string) {
+    const currentRefreshToken = await bcrypt.hash(refreshToken, 10);
+    return currentRefreshToken;
+  }
+
+  async getCurrentRefreshTokenExp(): Promise<Date> {
+    const currentDate = new Date();
+    console.log(currentDate.toLocaleString());
+    const currentRefreshTokenExp = new Date(
+      currentDate.getTime() +
+        parseInt(
+          // this.configService.get<string>(process.env.JWT_REFRESH_EXPIRE),
+          '86400', //1day
+        ),
+    );
+    return currentRefreshTokenExp;
+  }
+
+  async getUserIfRefreshTokenMatches(
+    refreshToken: string,
+    sno: number,
+  ): Promise<UserAuthDto> {
+    const user: UserAuthDto = await this.findBySno(sno);
+
+    // user에 currentRefreshToken이 없다면 null을 반환 (즉, 토큰 값이 null일 경우)
+    if (!user.refreshToken) {
+      return null;
+    }
+
+    // 유저 테이블 내에 정의된 암호화된 refresh_token값과 요청 시 body에 담아준 refresh_token값 비교
+    const isRefreshTokenMatching = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+
+    // 만약 isRefreshTokenMatching이 true라면 user 객체를 반환
+    if (isRefreshTokenMatching) {
+      return user;
+    }
+  }
+
+  async removeRefreshToken(sno: number): Promise<any> {
+    const updateRefresh = {
+      REFRESH_TOKEN: null,
+      REFRESH_TOKEN_EXP: null,
+    };
+
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set(updateRefresh)
+      .where('USER_SNO = :sno', { sno })
+      .execute();
   }
 }

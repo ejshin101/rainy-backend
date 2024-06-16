@@ -9,6 +9,8 @@ export class UserAuthDto {
     userCd: UserCodeEnum,
     userStatCd: string,
     delTf: string,
+    refreshToken: string,
+    refreshTokenExp: Date,
   ) {
     this.userSno = userSno;
     this.userNm = userNm;
@@ -17,6 +19,9 @@ export class UserAuthDto {
     this.userCd = userCd;
     this.userStatCd = userStatCd;
     this.delTf = delTf;
+    this.refreshToken = refreshToken;
+    this.refreshTokenExp = refreshTokenExp;
+
   }
 
   userSno: number;
@@ -26,4 +31,6 @@ export class UserAuthDto {
   userCd: UserCodeEnum;
   userStatCd: string;
   delTf: string;
+  refreshToken: string;
+  refreshTokenExp: Date;
 }
