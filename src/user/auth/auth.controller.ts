@@ -17,6 +17,7 @@ import { JwtAccessGuard } from './jwt-access.guard';
 import { UserService } from '../user.service';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtRefreshGuard } from './jwt-refresh.guard';
+import { PublicDecorator } from '../../common/public.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -26,11 +27,13 @@ export class AuthController {
   ) {}
 
   @Post('/signup')
+  @PublicDecorator() // Guard를 비활성화
   async signup(@Body() user: CreateUserDto): Promise<executeResponseDto> {
     return await this.authService.signup(user);
   }
 
   @Post('/login')
+  @PublicDecorator() // Guard를 비활성화
   async login(
     @Body() user: UserAuthDto,
     @Res({ passthrough: true }) res: Response,
@@ -69,6 +72,7 @@ export class AuthController {
   }
 
   @Post('/refresh')
+  @PublicDecorator() // Guard를 비활성화
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
     @Res({ passthrough: true }) res: Response,
@@ -87,6 +91,7 @@ export class AuthController {
   }
 
   @Post('/logout')
+  @PublicDecorator() // Guard를 비활성화
   @UseGuards(JwtRefreshGuard)
   async logout(@Req() req: any, @Res() res: Response): Promise<any> {
     await this.userService.removeRefreshToken(req.user.userSno);

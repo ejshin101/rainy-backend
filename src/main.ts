@@ -1,7 +1,9 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { JwtService } from '@nestjs/jwt';
+import { JwtAccessGuard } from './user/auth/jwt-access.guard';
 
 
 
@@ -16,6 +18,11 @@ async function bootstrap() {
       },
     }),
   );
+
+  //jwt access token 전역 적용
+  const jwtService = app.get(JwtService);
+  app.useGlobalGuards(new JwtAccessGuard(jwtService, new Reflector()));
+
   app.use(cookieParser());
   await app.listen(3000);
 }

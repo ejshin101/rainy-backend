@@ -29,6 +29,8 @@ export class AuthService {
     const userFind: UserAuthDto = await this.userService.findByEmail(
       user.userEmail,
     );
+
+    //코드 정해서 하기
     if (userFind) {
       throw new HttpException(
         'User Email already used!',
