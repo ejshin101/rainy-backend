@@ -14,8 +14,8 @@ import { UserAuthDto } from '../dto/UserAuthDto';
 import * as bcrypt from 'bcrypt';
 import { Payload } from './payload.interface';
 import { ConfigService } from '@nestjs/config';
-import process from 'process';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import ResponseCodeEnum from '../../common/enum/ResponseCode.enum';
 
 @Injectable()
 export class AuthService {
@@ -38,6 +38,22 @@ export class AuthService {
       );
     }
     return await this.userService.create(user);
+  }
+
+  async duplicates(userEmail: string): Promise<executeResponseDto> {
+    const userFind: UserAuthDto = await this.userService.findByEmail(
+      userEmail,
+    );
+
+    //코드 정해서 하기
+    if (userFind) {
+      throw new HttpException(
+        'User Email already used!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return new executeResponseDto(ResponseCodeEnum.success, 1);
   }
 
   async login(user: UserAuthDto): Promise<{ accessToken: string } | undefined> {
@@ -63,7 +79,6 @@ export class AuthService {
     return await this.userService.findByEmail(payload.userEmail);
   }
 
-  ////////
   async validateUser(user: UserAuthDto): Promise<UserAuthDto> {
     const userFind = await this.userService.findByEmail(user.userEmail);
 
@@ -96,11 +111,7 @@ export class AuthService {
     return this.jwtService.signAsync(
       { userSno: payload.userSno },
       {
-        // secret: this.configService.get<string>(process.env.JWT_REFRESH_SECRET),
         secret: 'JWT_REFRESH_SECRET',
-        // expiresIn: this.configService.get<string>(
-        //   process.env.JWT_REFRESH_EXPIRE,
-        // ),
         expiresIn: 86400, //1day
       },
     );
@@ -112,7 +123,6 @@ export class AuthService {
     const { refreshToken } = refreshTokenDto;
 
     const decodedRefreshToken = this.jwtService.verify(refreshToken, {
-      // secret: process.env.JWT_REFRESH_SECRET,
       secret: 'JWT_REFRESH_SECRET',
     }) as Payload;
 
@@ -128,5 +138,19 @@ export class AuthService {
 
     const accessToken = await this.generateAccessToken(user);
     return { accessToken };
+  }
+
+  //회원탈퇴
+  async resign(user: UserAuthDto): Promise<executeResponseDto> {
+    const userFind = await this.userService.findByEmail(user.userEmail);
+    const validatePassword = await bcrypt.compare(
+      user.userPswd,
+      userFind.userPswd,
+    );
+
+    if (!userFind || !validatePassword) {
+      throw new UnauthorizedException();
+    }
+    return await this.userService.delete(userFind.userSno);
   }
 }

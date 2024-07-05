@@ -6,6 +6,7 @@ export class UserAuthDto {
     userNm: string,
     userEmail: string,
     userPswd: string,
+    userUseTf: string,
     userCd: UserCodeEnum,
     userStatCd: string,
     delTf: string,
@@ -16,6 +17,7 @@ export class UserAuthDto {
     this.userNm = userNm;
     this.userEmail = userEmail;
     this.userPswd = userPswd;
+    this.userUseTf = userUseTf;
     this.userCd = userCd;
     this.userStatCd = userStatCd;
     this.delTf = delTf;
@@ -28,6 +30,7 @@ export class UserAuthDto {
   userNm: string;
   userEmail: string;
   userPswd: string;
+  userUseTf: string;
   userCd: UserCodeEnum;
   userStatCd: string;
   delTf: string;

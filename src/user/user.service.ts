@@ -40,7 +40,6 @@ export class UserService {
       .where('user.USER_NM LIKE :keyword', {
         keyword: `%${getAllUsersRequestDto.keyword}%`,
       })
-      .andWhere('user.DEL_TF = "F"')
       .select('user.USER_SNO', 'userSno')
       .addSelect('user.USER_EMAIL', 'userEmail')
       .addSelect('user.USER_CD', 'userCd')
@@ -75,6 +74,7 @@ export class UserService {
     return await this.userRepository
       .createQueryBuilder('user')
       .where('user.USER_EMAIL = :userEmail', { userEmail })
+      .andWhere('user.DEL_TF = :delTf', { delTf: 'F' })
       .select('user.USER_SNO', 'userSno')
       .addSelect('user.USER_EMAIL', 'userEmail')
       .addSelect('user.USER_PSWD', 'userPswd')
@@ -89,6 +89,7 @@ export class UserService {
       .createQueryBuilder('user')
       .where('user.USER_SNO = :sno', { sno })
       .select('user.USER_SNO', 'userSno')
+      .addSelect('user.USER_NM', 'userNm')
       .addSelect('user.USER_EMAIL', 'userEmail')
       .addSelect('user.USER_PSWD', 'userPswd')
       .addSelect('user.USER_CD', 'userCd')
@@ -147,6 +148,9 @@ export class UserService {
       .update(User)
       .set({
         DEL_TF: TrueFalseCodeEnum.isTrue,
+        REFRESH_TOKEN: null,
+        REFRESH_TOKEN_EXP: null,
+        EDIT_DTT: new Date(),
       })
       .where('USER_SNO = :sno', { sno })
       .execute();

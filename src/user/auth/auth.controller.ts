@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
   Req,
@@ -18,6 +19,7 @@ import { UserService } from '../user.service';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtRefreshGuard } from './jwt-refresh.guard';
 import { PublicDecorator } from '../../common/public.decorator';
+import { UserResponseDto } from '../dto/UserResponseDto';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +32,19 @@ export class AuthController {
   @PublicDecorator() // Guard를 비활성화
   async signup(@Body() user: CreateUserDto): Promise<executeResponseDto> {
     return await this.authService.signup(user);
+  }
+
+  @Get('/account/:sno')
+  @UseGuards(JwtAccessGuard)
+  async account(@Body() sno: number): Promise<UserResponseDto> {
+    return await this.userService.find(sno);
+  }
+
+  @Get('/account/duplicates')
+  @PublicDecorator() // Guard를 비활성화
+  async duplicates(@Req() req: any): Promise<executeResponseDto> {
+    const userEmail = req.query.userEmail;
+    return await this.authService.duplicates(userEmail);
   }
 
   @Post('/login')
@@ -91,12 +106,26 @@ export class AuthController {
   }
 
   @Post('/logout')
-  @PublicDecorator() // Guard를 비활성화
   @UseGuards(JwtRefreshGuard)
   async logout(@Req() req: any, @Res() res: Response): Promise<any> {
     await this.userService.removeRefreshToken(req.user.userSno);
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
     return res.send({ message: 'logout success' });
+  }
+
+  @Delete('/account')
+  @UseGuards(JwtAccessGuard)
+  async resign(
+    @Body() user: UserAuthDto,
+    @Req() req: any,
+    @Res() res: Response,
+  ): Promise<executeResponseDto> {
+    await this.userService.removeRefreshToken(user.userSno);
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    const result = await this.authService.resign(user);
+    res.send(result);
+    return result;
   }
 }
