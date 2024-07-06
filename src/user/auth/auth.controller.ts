@@ -79,6 +79,7 @@ export class AuthController {
   }
 
   @Get('/authenticate')
+  @PublicDecorator() // Guard를 비활성화
   @UseGuards(JwtAccessGuard)
   async user(@Req() req: any, @Res() res: Response): Promise<any> {
     const userSno: number = req.user.userSno;
