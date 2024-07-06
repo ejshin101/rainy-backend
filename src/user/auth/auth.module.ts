@@ -25,7 +25,7 @@ import { JwtRefreshStrategy } from './auth-refresh.strategy';
         // secret: config.get<string>(process.env.JWT_ACCESS_SECRET),
         secret: 'JWT_ACCESS_SECRET',
         // signOptions: { expiresIn: config.get<string>(process.env.JWT_ACCESS_EXPIRE) },
-        signOptions: { expiresIn: 20 }, //20s
+        signOptions: { expiresIn: '1d' }, //20s
       }),
     }),
   ],

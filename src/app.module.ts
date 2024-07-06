@@ -7,6 +7,7 @@ import { PlantListModule } from './plantList/plantList.module';
 import { UserPlntModule } from './userPlnt/user-plnt.module';
 import { PlntJrnlModule } from './plntJrnl/plnt-jrnl.module';
 import { AuthModule } from './user/auth/auth.module';
+import { EmailVerModule } from './email/email-ver.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from './user/auth/auth.module';
     UserPlntModule,
     PlntJrnlModule,
     AuthModule,
+    EmailVerModule,
   ],
 })
 export class AppModule {}

@@ -3,7 +3,7 @@ import {
   Controller,
   Delete,
   Get,
-  Post,
+  Post, Query,
   Req,
   Res,
   UnauthorizedException,
@@ -20,6 +20,8 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtRefreshGuard } from './jwt-refresh.guard';
 import { PublicDecorator } from '../../common/public.decorator';
 import { UserResponseDto } from '../dto/UserResponseDto';
+import responseCodeEnum from '../../common/enum/ResponseCode.enum';
+import ResponseCodeEnum from '../../common/enum/ResponseCode.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -34,17 +36,30 @@ export class AuthController {
     return await this.authService.signup(user);
   }
 
-  @Get('/account/:sno')
-  @UseGuards(JwtAccessGuard)
-  async account(@Body() sno: number): Promise<UserResponseDto> {
-    return await this.userService.find(sno);
-  }
-
   @Get('/account/duplicates')
   @PublicDecorator() // Guard를 비활성화
-  async duplicates(@Req() req: any): Promise<executeResponseDto> {
-    const userEmail = req.query.userEmail;
-    return await this.authService.duplicates(userEmail);
+  async duplicates(@Query() user: UserAuthDto): Promise<executeResponseDto> {
+    console.log(user.userEmail);
+    return await this.authService.duplicates(user.userEmail);
+  }
+
+  @Post('/refresh')
+  @PublicDecorator() // Guard를 비활성화
+  async refresh(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      const newAccessToken = (await this.authService.refresh(refreshTokenDto))
+        .accessToken;
+      res.setHeader('Authorization', 'Bearer ' + newAccessToken);
+      res.cookie('access_token', newAccessToken, {
+        httpOnly: true,
+      });
+      res.send({ newAccessToken });
+    } catch (err) {
+      return new executeResponseDto(ResponseCodeEnum.unauthorized, 0);
+    }
   }
 
   @Post('/login')
@@ -78,6 +93,12 @@ export class AuthController {
     };
   }
 
+  @Get('/account/:sno')
+  @UseGuards(JwtAccessGuard)
+  async account(@Body() sno: number): Promise<UserResponseDto> {
+    return await this.userService.find(sno);
+  }
+
   @Get('/authenticate')
   @UseGuards(JwtAccessGuard)
   async user(@Req() req: any, @Res() res: Response): Promise<any> {
@@ -86,32 +107,13 @@ export class AuthController {
     return res.send(verifiedUser);
   }
 
-  @Post('/refresh')
-  @PublicDecorator() // Guard를 비활성화
-  async refresh(
-    @Body() refreshTokenDto: RefreshTokenDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    try {
-      const newAccessToken = (await this.authService.refresh(refreshTokenDto))
-        .accessToken;
-      res.setHeader('Authorization', 'Bearer ' + newAccessToken);
-      res.cookie('access_token', newAccessToken, {
-        httpOnly: true,
-      });
-      res.send({ newAccessToken });
-    } catch (err) {
-      throw new UnauthorizedException('Invalid refresh-token');
-    }
-  }
-
   @Post('/logout')
   @UseGuards(JwtRefreshGuard)
   async logout(@Req() req: any, @Res() res: Response): Promise<any> {
     await this.userService.removeRefreshToken(req.user.userSno);
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
-    return res.send({ message: 'logout success' });
+    return res.send({ responseCode: responseCodeEnum.success });
   }
 
   @Delete('/account')

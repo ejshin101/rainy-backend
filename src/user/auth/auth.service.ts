@@ -1,7 +1,5 @@
 import {
   BadRequestException,
-  HttpException,
-  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -32,10 +30,7 @@ export class AuthService {
 
     //코드 정해서 하기
     if (userFind) {
-      throw new HttpException(
-        'User Email already used!',
-        HttpStatus.BAD_REQUEST,
-      );
+      return new executeResponseDto(ResponseCodeEnum.alreadyUsed, 0);
     }
     return await this.userService.create(user);
   }
@@ -47,10 +42,7 @@ export class AuthService {
 
     //코드 정해서 하기
     if (userFind) {
-      throw new HttpException(
-        'User Email already used!',
-        HttpStatus.BAD_REQUEST,
-      );
+      return new executeResponseDto(ResponseCodeEnum.alreadyUsed, 0);
     }
 
     return new executeResponseDto(ResponseCodeEnum.success, 1);

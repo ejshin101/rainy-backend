@@ -18,6 +18,7 @@ export class JwtAccessGuard implements CanActivate {
     ]);
 
     if (isPublic) {
+      console.log('Public route');
       return true; // 공개 경로는 접근 허용
     }
 
@@ -27,14 +28,17 @@ export class JwtAccessGuard implements CanActivate {
     const accessToken = authHeader && authHeader.split(' ')[1];
 
     if (!accessToken) {
+      console.log('No access token');
       return false; // 토큰이 없는 경우 접근 불가
     }
 
     try {
       const user = await this.jwtService.verify(accessToken);
       request.user = user;
+      console.log('Access token valid');
       return true;
     } catch (err) {
+      console.log('Access token invalid', err);
       return false;
     }
   }

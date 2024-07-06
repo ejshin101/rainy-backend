@@ -189,13 +189,14 @@ export class UserService {
   async getCurrentRefreshTokenExp(): Promise<Date> {
     const currentDate = new Date();
     console.log(currentDate.toLocaleString());
+    const refreshTokenExpireInSeconds =
+      Number(process.env.JWT_REFRESH_EXPIRE) || 86400; // 기본값 1일
+
+    // 현재 시간에 refreshTokenExpireInSeconds를 더하여 새로운 날짜 계산
     const currentRefreshTokenExp = new Date(
-      currentDate.getTime() +
-        parseInt(
-          // this.configService.get<string>(process.env.JWT_REFRESH_EXPIRE),
-          '86400', //1day
-        ),
+      currentDate.getTime() + refreshTokenExpireInSeconds * 1000,
     );
+    console.log(currentRefreshTokenExp.toLocaleString());
     return currentRefreshTokenExp;
   }
 
