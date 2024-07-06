@@ -23,7 +23,8 @@ export class JwtAccessGuard implements CanActivate {
 
     // 공개 경로가 아닌 경우 토큰 검증
     const request = context.switchToHttp().getRequest();
-    const accessToken = request.cookies['access_token'];
+    const authHeader = request.headers['authorization'];
+    const accessToken = authHeader && authHeader.split(' ')[1];
 
     if (!accessToken) {
       return false; // 토큰이 없는 경우 접근 불가
