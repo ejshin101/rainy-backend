@@ -14,7 +14,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         },
       },
       defaults: {
-        from: '"비밀번호 초기화 이메일입니다." <rainy.green.ad@gmail.com>',
+        from: '"Rainy Green 인증 이메일입니다." <rainy.green.ad@gmail.com>',
       },
       template: {
         dir: __dirname + '/../common/email-templates',

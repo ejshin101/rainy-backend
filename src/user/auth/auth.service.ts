@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from '../user.service';
@@ -11,16 +10,17 @@ import { JwtService } from '@nestjs/jwt';
 import { UserAuthDto } from '../dto/UserAuthDto';
 import * as bcrypt from 'bcrypt';
 import { Payload } from './payload.interface';
-import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import ResponseCodeEnum from '../../common/enum/ResponseCode.enum';
+import responseCodeEnum from '../../common/enum/ResponseCode.enum';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async signup(user: CreateUserDto): Promise<executeResponseDto> {
@@ -36,9 +36,7 @@ export class AuthService {
   }
 
   async duplicates(userEmail: string): Promise<executeResponseDto> {
-    const userFind: UserAuthDto = await this.userService.findByEmail(
-      userEmail,
-    );
+    const userFind: UserAuthDto = await this.userService.findByEmail(userEmail);
 
     //코드 정해서 하기
     if (userFind) {
@@ -48,14 +46,16 @@ export class AuthService {
     return new executeResponseDto(ResponseCodeEnum.success, 1);
   }
 
-  async login(user: UserAuthDto): Promise<{ accessToken: string } | undefined> {
+  async login(
+    user: UserAuthDto,
+  ): Promise<{ accessToken: string } | ResponseCodeEnum> {
     const userFind = await this.userService.findByEmail(user.userEmail);
     const validatePassword = await bcrypt.compare(
       user.userPswd,
       userFind.userPswd,
     );
     if (!userFind || !validatePassword) {
-      throw new UnauthorizedException();
+      return ResponseCodeEnum.badRequest;
     }
 
     const payload: Payload = {
@@ -71,15 +71,17 @@ export class AuthService {
     return await this.userService.findByEmail(payload.userEmail);
   }
 
-  async validateUser(user: UserAuthDto): Promise<UserAuthDto> {
+  async validateUser(
+    user: UserAuthDto,
+  ): Promise<UserAuthDto | ResponseCodeEnum> {
     const userFind = await this.userService.findByEmail(user.userEmail);
+    const validatePassword = await bcrypt.compare(
+      user.userPswd,
+      userFind.userPswd,
+    );
 
-    if (!userFind) {
-      throw new NotFoundException('User not found!');
-    }
-
-    if (!(await bcrypt.compare(user.userPswd, userFind.userPswd))) {
-      throw new BadRequestException('Invalid credentials!');
+    if (!userFind || !validatePassword) {
+      return ResponseCodeEnum.badRequest;
     }
 
     return userFind;
@@ -144,5 +146,29 @@ export class AuthService {
       throw new UnauthorizedException();
     }
     return await this.userService.delete(userFind.userSno);
+  }
+
+  // async validateEmailVer() {
+  //   const
+  // }
+
+  async sendVerCd(user: UserAuthDto) {
+    const userFind = await this.userService.findByEmail(user.userEmail);
+
+    if (!userFind) {
+      return new executeResponseDto(responseCodeEnum.noExistingData, 0);
+    }
+
+    const emailVerCd = Math.floor(100000 + Math.random() * 900000);
+
+    await this.mailerService.sendMail({
+      to: userFind.userEmail,
+      subject: '비밀번호 인증번호',
+      template: 'reset-password',
+      context: {
+        userNm: userFind.userNm,
+        emailVerCd: emailVerCd,
+      },
+    });
   }
 }

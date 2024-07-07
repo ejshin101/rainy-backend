@@ -3,10 +3,10 @@ import {
   Controller,
   Delete,
   Get,
-  Post, Query,
+  Post,
+  Query,
   Req,
   Res,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -56,9 +56,12 @@ export class AuthController {
       res.cookie('access_token', newAccessToken, {
         httpOnly: true,
       });
-      res.send({ newAccessToken });
+      res.send({ ResponseCode: ResponseCodeEnum.success, newAccessToken });
     } catch (err) {
-      return new executeResponseDto(ResponseCodeEnum.unauthorized, 0);
+      res.send({
+        responseCode: ResponseCodeEnum.unauthorized,
+        newAccessToken: '',
+      });
     }
   }
 
@@ -69,28 +72,41 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<any> {
     const validateUser = await this.authService.validateUser(user);
-    const accessToken =
-      await this.authService.generateAccessToken(validateUser);
-    const refreshToken =
-      await this.authService.generateRefreshToken(validateUser);
 
-    await this.userService.setCurrentRefreshToken(
-      refreshToken,
-      validateUser.userSno,
-    );
+    if (validateUser === ResponseCodeEnum.badRequest) {
+      return {
+        responseCode: validateUser,
+        accessToken: '',
+        refreshToken: '',
+      };
+    } else {
+      const accessToken = await this.authService.generateAccessToken(
+        <UserAuthDto>validateUser,
+      );
+      const refreshToken = await this.authService.generateRefreshToken(
+        <UserAuthDto>validateUser,
+      );
 
-    res.setHeader('Authorization', 'Bearer ' + [accessToken, refreshToken]);
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-    });
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-    });
-    return {
-      message: 'login success',
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
+      if (validateUser instanceof UserAuthDto) {
+        await this.userService.setCurrentRefreshToken(
+          refreshToken,
+          validateUser.userSno,
+        );
+      }
+
+      res.setHeader('Authorization', 'Bearer ' + [accessToken, refreshToken]);
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+      });
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+      });
+      return {
+        responseCode: '000',
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      };
+    }
   }
 
   @Get('/account/:sno')
