@@ -75,12 +75,12 @@ export class AuthService {
     user: UserAuthDto,
   ): Promise<UserAuthDto | ResponseCodeEnum> {
     const userFind = await this.userService.findByEmail(user.userEmail);
-    const validatePassword = await bcrypt.compare(
-      user.userPswd,
-      userFind.userPswd,
-    );
 
-    if (!userFind || !validatePassword) {
+    if (!userFind) {
+      return ResponseCodeEnum.badRequest;
+    }
+
+    if (!(await bcrypt.compare(user.userPswd, userFind.userPswd))) {
       return ResponseCodeEnum.badRequest;
     }
 
