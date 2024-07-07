@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserService } from '../user.service';
 import { executeResponseDto } from '../../common/dto/executeResponse.dto';
 import { CreateUserDto } from '../dto/CreateUserDto';
@@ -113,7 +109,7 @@ export class AuthService {
 
   async refresh(
     refreshTokenDto: RefreshTokenDto,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ accessToken: string } | any> {
     const { refreshToken } = refreshTokenDto;
 
     const decodedRefreshToken = this.jwtService.verify(refreshToken, {
@@ -126,25 +122,33 @@ export class AuthService {
       userSno,
     );
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid user');
-    }
+    console.log('user');
+    console.log(user!);
 
-    const accessToken = await this.generateAccessToken(user);
-    return { accessToken };
+    if (!user) {
+      return {
+        accessToken: '',
+      };
+    } else {
+      const accessToken = await this.generateAccessToken(user);
+
+      return { accessToken };
+    }
   }
 
   //회원탈퇴
-  async resign(user: UserAuthDto): Promise<executeResponseDto> {
+  async resign(
+    user: UserAuthDto,
+  ): Promise<executeResponseDto | ResponseCodeEnum> {
     const userFind = await this.userService.findByEmail(user.userEmail);
-    const validatePassword = await bcrypt.compare(
-      user.userPswd,
-      userFind.userPswd,
-    );
-
-    if (!userFind || !validatePassword) {
-      throw new UnauthorizedException();
+    if (!userFind) {
+      return new executeResponseDto(ResponseCodeEnum.badRequest, 0);
     }
+
+    if (!(await bcrypt.compare(user.userPswd, userFind.userPswd))) {
+      return new executeResponseDto(ResponseCodeEnum.badRequest, 0);
+    }
+
     return await this.userService.delete(userFind.userSno);
   }
 

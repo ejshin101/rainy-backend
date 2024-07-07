@@ -49,19 +49,17 @@ export class AuthController {
     @Body() refreshTokenDto: RefreshTokenDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      const newAccessToken = (await this.authService.refresh(refreshTokenDto))
-        .accessToken;
-      res.setHeader('Authorization', 'Bearer ' + newAccessToken);
-      res.cookie('access_token', newAccessToken, {
-        httpOnly: true,
-      });
-      res.send({ ResponseCode: ResponseCodeEnum.success, newAccessToken });
-    } catch (err) {
+    const newAccessToken = (await this.authService.refresh(refreshTokenDto))
+      .accessToken;
+
+    if (newAccessToken === '' || newAccessToken === null) {
       res.send({
         responseCode: ResponseCodeEnum.unauthorized,
         newAccessToken: '',
       });
+    } else {
+      res.setHeader('Authorization', 'Bearer ' + newAccessToken);
+      res.send({ ResponseCode: ResponseCodeEnum.success, newAccessToken });
     }
   }
 
@@ -79,28 +77,20 @@ export class AuthController {
         accessToken: '',
         refreshToken: '',
       };
-    } else {
-      const accessToken = await this.authService.generateAccessToken(
-        <UserAuthDto>validateUser,
-      );
-      const refreshToken = await this.authService.generateRefreshToken(
-        <UserAuthDto>validateUser,
-      );
+    } else if (validateUser) {
+      const userAuthDto = validateUser as UserAuthDto;
 
-      if (validateUser instanceof UserAuthDto) {
-        await this.userService.setCurrentRefreshToken(
-          refreshToken,
-          validateUser.userSno,
-        );
-      }
+      const accessToken =
+        await this.authService.generateAccessToken(userAuthDto);
+      const refreshToken =
+        await this.authService.generateRefreshToken(userAuthDto);
+
+      await this.userService.setCurrentRefreshToken(
+        refreshToken,
+        userAuthDto.userSno,
+      );
 
       res.setHeader('Authorization', 'Bearer ' + [accessToken, refreshToken]);
-      res.cookie('access_token', accessToken, {
-        httpOnly: true,
-      });
-      res.cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-      });
       return {
         responseCode: '000',
         accessToken: accessToken,
@@ -127,8 +117,6 @@ export class AuthController {
   @UseGuards(JwtRefreshGuard)
   async logout(@Req() req: any, @Res() res: Response): Promise<any> {
     await this.userService.removeRefreshToken(req.user.userSno);
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
     return res.send({ responseCode: responseCodeEnum.success });
   }
 
@@ -138,10 +126,8 @@ export class AuthController {
     @Body() user: UserAuthDto,
     @Req() req: any,
     @Res() res: Response,
-  ): Promise<executeResponseDto> {
+  ): Promise<executeResponseDto | ResponseCodeEnum> {
     await this.userService.removeRefreshToken(user.userSno);
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
     const result = await this.authService.resign(user);
     res.send(result);
     return result;
