@@ -91,7 +91,6 @@ export class UserService {
       .select('user.USER_SNO', 'userSno')
       .addSelect('user.USER_NM', 'userNm')
       .addSelect('user.USER_EMAIL', 'userEmail')
-      .addSelect('user.USER_PSWD', 'userPswd')
       .addSelect('user.USER_CD', 'userCd')
       .addSelect('user.USER_STAT_CD', 'userStatCd')
       .addSelect('user.REFRESH_TOKEN', 'refreshToken')
