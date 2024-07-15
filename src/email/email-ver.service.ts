@@ -5,13 +5,17 @@ import { Repository } from 'typeorm';
 import { EmailVer } from './email-ver.entity';
 import ResponseCodeEnum from '../common/enum/ResponseCode.enum';
 import { EmailVerResponseDto } from './dto/email-ver-response.dto';
-import { UpdateEmailVerDto } from './dto/update-email-ver.dto';
+import { MailerService } from '@nestjs-modules/mailer';
+import responseCodeEnum from '../common/enum/ResponseCode.enum';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class EmailVerService {
   constructor(
     @Inject('EMAIL_VER_REPOSITORY')
-    private emailVerRepository: Repository<EmailVer>,
+    private readonly emailVerRepository: Repository<EmailVer>,
+    private readonly mailerService: MailerService,
+    private readonly userService: UserService,
   ) {}
 
   async create(email: SendEmailVerDto): Promise<executeResponseDto> {
@@ -45,15 +49,38 @@ export class EmailVerService {
       .getRawOne();
   }
 
-  async update(
-    sno: number,
-    email: UpdateEmailVerDto,
-  ): Promise<executeResponseDto> {
+  async findByCurrentTime(sno: number): Promise<EmailVerResponseDto> {
+    const currentTime = new Date();
+    return await this.emailVerRepository
+      .createQueryBuilder('emailVer')
+      .where('emailVer.USER_SNO = :sno', { sno })
+      .andWhere('emailVer.CRTE_DTT <= :currentTime', { currentTime })
+      .andWhere('emailVer.EXPR_DTT >= :currentTime', { currentTime })
+      .select('emailVer.EMAIL_VER_SNO', 'emailVerSno')
+      .addSelect('emailVer.USER_SNO', 'userSno')
+      .addSelect('emailVer.EMAIL_VER_CD', 'emailVerCd')
+      .addSelect('emailVer.CRTE_DTT', 'crteDtt')
+      .addSelect('emailVer.EXPR_DTT', 'exprDtt')
+      .getRawOne();
+  }
+
+  async update(sno: number): Promise<executeResponseDto> {
     const now = new Date();
     const exprDtt = new Date(now.getTime() + 5 * 60 * 1000);
+    const emailVerCd = Math.floor(100000 + Math.random() * 900000).toString();
+    const userFind = await this.userService.find(sno);
+
+    await this.mailerService.sendMail({
+      to: userFind.userEmail,
+      subject: 'rainy green 인증번호',
+      template: 'auth-email',
+      context: {
+        emailVerCd: emailVerCd,
+      },
+    });
 
     const updateData = {
-      ...(email.emailVerCd && { EMAIL_VER_CD: email.emailVerCd }),
+      EMAIL_VER_CD: emailVerCd,
       EXPR_DTT: exprDtt,
     };
 
@@ -65,5 +92,29 @@ export class EmailVerService {
       .execute();
 
     return new executeResponseDto(ResponseCodeEnum.success, result.affected);
+  }
+
+  async sendVerCd(sno: number) {
+    const userFind = await this.userService.find(sno);
+
+    if (!userFind) {
+      return new executeResponseDto(responseCodeEnum.noExistingData, 0);
+    }
+
+    const emailVerCd = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await this.mailerService.sendMail({
+      to: userFind.userEmail,
+      subject: 'rainy green 인증번호',
+      template: 'auth-email',
+      context: {
+        emailVerCd: emailVerCd,
+      },
+    });
+
+    const emailVerDto = new SendEmailVerDto(userFind.userSno, emailVerCd);
+
+    await this.create(emailVerDto);
+    return new executeResponseDto(ResponseCodeEnum.success, 1);
   }
 }

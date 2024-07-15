@@ -5,8 +5,6 @@ import cookieParser from 'cookie-parser';
 import { JwtService } from '@nestjs/jwt';
 import { JwtAccessGuard } from './user/auth/jwt-access.guard';
 
-
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('/api'); // global prefix
@@ -24,7 +22,7 @@ async function bootstrap() {
     origin: 'http://localhost:5000', // React 앱이 실행되는 주소
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
-  })
+  });
 
   //jwt access token 전역 적용
   const jwtService = app.get(JwtService);

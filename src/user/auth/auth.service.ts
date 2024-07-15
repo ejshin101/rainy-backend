@@ -1,40 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from '../user.service';
 import { executeResponseDto } from '../../common/dto/executeResponse.dto';
-import { CreateUserDto } from '../dto/CreateUserDto';
 import { JwtService } from '@nestjs/jwt';
 import { UserAuthDto } from '../dto/UserAuthDto';
 import * as bcrypt from 'bcrypt';
 import { Payload } from './payload.interface';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import ResponseCodeEnum from '../../common/enum/ResponseCode.enum';
-import responseCodeEnum from '../../common/enum/ResponseCode.enum';
-import { MailerService } from '@nestjs-modules/mailer';
+import { UpdateUserDto } from '../dto/UpdateUserDto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-    private readonly mailerService: MailerService,
   ) {}
 
-  async signup(user: CreateUserDto): Promise<executeResponseDto> {
+  async signup(user: UpdateUserDto): Promise<executeResponseDto> {
     const userFind: UserAuthDto = await this.userService.findByEmail(
       user.userEmail,
     );
 
-    //코드 정해서 하기
-    if (userFind) {
-      return new executeResponseDto(ResponseCodeEnum.alreadyUsed, 0);
-    }
-    return await this.userService.create(user);
+    return await this.userService.updateUser(userFind.userSno, user);
   }
 
   async duplicates(userEmail: string): Promise<executeResponseDto> {
     const userFind: UserAuthDto = await this.userService.findByEmail(userEmail);
 
-    //코드 정해서 하기
     if (userFind) {
       return new executeResponseDto(ResponseCodeEnum.alreadyUsed, 0);
     }
@@ -150,29 +142,5 @@ export class AuthService {
     }
 
     return await this.userService.delete(userFind.userSno);
-  }
-
-  // async validateEmailVer() {
-  //   const
-  // }
-
-  async sendVerCd(user: UserAuthDto) {
-    const userFind = await this.userService.findByEmail(user.userEmail);
-
-    if (!userFind) {
-      return new executeResponseDto(responseCodeEnum.noExistingData, 0);
-    }
-
-    const emailVerCd = Math.floor(100000 + Math.random() * 900000);
-
-    await this.mailerService.sendMail({
-      to: userFind.userEmail,
-      subject: '비밀번호 인증번호',
-      template: 'reset-password',
-      context: {
-        userNm: userFind.userNm,
-        emailVerCd: emailVerCd,
-      },
-    });
   }
 }

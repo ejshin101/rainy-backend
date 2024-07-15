@@ -22,6 +22,7 @@ import { PublicDecorator } from '../../common/public.decorator';
 import { UserResponseDto } from '../dto/UserResponseDto';
 import responseCodeEnum from '../../common/enum/ResponseCode.enum';
 import ResponseCodeEnum from '../../common/enum/ResponseCode.enum';
+import { UpdateUserDto } from '../dto/UpdateUserDto';
 
 @Controller('auth')
 export class AuthController {
@@ -32,14 +33,20 @@ export class AuthController {
 
   @Post('/signup')
   @PublicDecorator() // Guard를 비활성화
-  async signup(@Body() user: CreateUserDto): Promise<executeResponseDto> {
+  async signup(@Body() user: UpdateUserDto): Promise<executeResponseDto> {
+    const getUserEmail = user.userEmail;
+    const getUser = await this.userService.findByEmail(getUserEmail);
+
+    if (!getUser) {
+      return new executeResponseDto(ResponseCodeEnum.noExistingData, 0);
+    }
+
     return await this.authService.signup(user);
   }
 
   @Get('/account/duplicates')
   @PublicDecorator() // Guard를 비활성화
   async duplicates(@Query() user: UserAuthDto): Promise<executeResponseDto> {
-    console.log(user.userEmail);
     return await this.authService.duplicates(user.userEmail);
   }
 

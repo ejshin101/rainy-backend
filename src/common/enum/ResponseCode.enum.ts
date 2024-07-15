@@ -5,6 +5,8 @@ const enum ResponseCodeEnum {
   unauthorized = '300', // 권한이 없을 때
   alreadyUsed = '400', //User Email already used
   badRequest = '500',
+  wrongVerCd = '600',
+  noVerCd = '601',
 }
 
 export default ResponseCodeEnum;

@@ -74,7 +74,7 @@ export class UserService {
     return await this.userRepository
       .createQueryBuilder('user')
       .where('user.USER_EMAIL = :userEmail', { userEmail })
-      .andWhere('user.DEL_TF = :delTf', { delTf: 'F' })
+      .andWhere('user.DEL_TF = :delTf', { delTf: TrueFalseCodeEnum.isFalse })
       .select('user.USER_SNO', 'userSno')
       .addSelect('user.USER_EMAIL', 'userEmail')
       .addSelect('user.USER_PSWD', 'userPswd')
@@ -120,6 +120,22 @@ export class UserService {
     return new executeResponseDto(ResponseCodeEnum.success, 1);
   }
 
+  async createTemp(user: CreateUserDto): Promise<number> {
+    const result = await this.userRepository
+      .createQueryBuilder()
+      .insert()
+      .into(User)
+      .values({
+        USER_EMAIL: user.userEmail,
+        USER_USE_TF: TrueFalseCodeEnum.isTemp,
+        CRTE_DTT: new Date(),
+        DEL_TF: TrueFalseCodeEnum.isFalse,
+      })
+      .execute();
+
+    return result.raw[0].user_sno;
+  }
+
   async update(sno: number, user: UpdateUserDto): Promise<executeResponseDto> {
     const updateData = {
       ...(user.userNm && { USER_NM: user.userNm }),
@@ -128,6 +144,48 @@ export class UserService {
       ...(user.userUseTf && { USER_USE_TF: user.userUseTf }),
       ...(user.userCd && { USER_CD: user.userCd }),
       ...(user.userStatCd && { USER_STAT_CD: user.userStatCd }),
+      EDIT_DTT: new Date(),
+    };
+
+    const result = await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set(updateData)
+      .where('USER_SNO = :sno', { sno })
+      .execute();
+
+    return new executeResponseDto(ResponseCodeEnum.success, result.affected);
+  }
+
+  async updateUserUseTf(
+    sno: number,
+    code: TrueFalseCodeEnum,
+  ): Promise<executeResponseDto> {
+    const updateData = {
+      USER_USE_TF: code,
+      EDIT_DTT: new Date(),
+    };
+
+    const result = await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set(updateData)
+      .where('USER_SNO = :sno', { sno })
+      .execute();
+
+    return new executeResponseDto(ResponseCodeEnum.success, result.affected);
+  }
+
+  async updateUser(
+    sno: number,
+    user: UpdateUserDto,
+  ): Promise<executeResponseDto> {
+    await this.transformPassword(user);
+    const updateData = {
+      ...(user.userNm && { USER_NM: user.userNm }),
+      ...(user.userPswd && { USER_PSWD: user.userPswd }),
+      ...(user.userCd && { USER_CD: user.userCd }),
+      USER_STAT_CD: UserStatusCodeEnum.active,
       EDIT_DTT: new Date(),
     };
 
@@ -235,4 +293,5 @@ export class UserService {
       .where('USER_SNO = :sno', { sno })
       .execute();
   }
+
 }
