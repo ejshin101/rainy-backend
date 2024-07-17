@@ -20,11 +20,15 @@ export class UserPlntResponseDto extends pagingRequestDto {
     this.plntDesc = plntDesc;
     this.userSno = userSno;
   }
+  readonly userPlntSno: number;
   readonly userPlntNm: string;
   readonly plntTypeSno: number;
+  readonly plntTypeKor: string;
   readonly plntAdptDt: Date;
   readonly plntAdptPrice: number;
   readonly plntAdptLctnNm: string;
   readonly plntDesc: string;
+  readonly crteDtt: Date;
+  readonly editDtt: Date;
   readonly userSno: number;
 }

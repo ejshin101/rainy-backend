@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserPlnt } from './user-plnt.entity';
+import { Plant } from './../plant/plant.entity';
 import { pagingResponseDto } from '../common/dto/pagingResponse.dto';
 import { UserPlntResponseDto } from './dto/user-plnt-response.dto';
 import { CreateUserPlntDto } from './dto/create-user-plnt.dto';
@@ -18,7 +19,7 @@ export class UserPlntService {
   async findAll(
     userSno,
     userPlntResponseDto: UserPlntResponseDto,
-  ): Promise<pagingResponseDto<UserPlnt>> {
+  ): Promise<pagingResponseDto<UserPlntResponseDto>> {
     const total = await this.userPlntRepository
       .createQueryBuilder('userPlnt')
       .where(
@@ -35,6 +36,12 @@ export class UserPlntService {
       .select('userPlnt.userPlntSno', 'userPlntSno')
       .addSelect('userPlnt.userPlntNm', 'userPlntNm')
       .addSelect('userPlnt.plntTypeSno', 'plntTypeSno')
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('plant.plntTypeKor', 'plntTypeKor')
+          .from(Plant, 'plant')
+          .where('userPlnt.plntTypeSno = plant.plntTypeSno');
+      }, 'plntTypeKor')
       .addSelect('userPlnt.plntAdptDt', 'plntAdptDt')
       .addSelect('userPlnt.plntAdptPrice', 'plntAdptPrice')
       .addSelect('userPlnt.plntAdptLctnNm', 'plntAdptLctnNm')

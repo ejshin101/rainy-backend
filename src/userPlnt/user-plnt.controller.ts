@@ -24,7 +24,7 @@ export class UserPlntController {
   findAll(
     @Param('userSno') userSno: number,
     @Query() userPlntResponseDto: UserPlntResponseDto,
-  ): Promise<pagingResponseDto<UserPlnt>> {
+  ): Promise<pagingResponseDto<UserPlntResponseDto>> {
     return this.userPlntService.findAll(userSno, userPlntResponseDto);
   }
 
