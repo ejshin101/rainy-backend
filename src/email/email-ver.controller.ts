@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { EmailVerService } from './email-ver.service';
 import { UserService } from '../user/user.service';
 import { CreateUserDto } from '../user/dto/CreateUserDto';
@@ -7,6 +7,7 @@ import { executeResponseDto } from '../common/dto/executeResponse.dto';
 import ResponseCodeEnum from '../common/enum/ResponseCode.enum';
 import { CodeCheckEmailVerDto } from './dto/code-check-email-ver.dto';
 import TrueFalseCodeEnum from '../common/enum/TrueFalseCode.enum';
+import { UpdateUserDto } from '../user/dto/UpdateUserDto';
 
 @Controller('email')
 export class EmailVerController {
@@ -61,13 +62,40 @@ export class EmailVerController {
       return new executeResponseDto(ResponseCodeEnum.noExistingData, 0);
     }
 
-    const result = await this.emailVerService.update(getUser.userSno);
+    const result = await this.emailVerService.sendVerCd(getUser.userSno);
     return result;
   }
 
-  // @Get('/email/forgot-password')
-  // @PublicDecorator()
-  // async forgotPassword() {
-  //
-  // }
+  @Post('/forgot-password')
+  @PublicDecorator()
+  async forgotPassword(@Body() user: CodeCheckEmailVerDto) {
+    const getUserEmail = user.userEmail;
+
+    const getUser = await this.userService.findByEmail(getUserEmail);
+
+    if (!getUser) {
+      return new executeResponseDto(ResponseCodeEnum.noExistingData, 0);
+    }
+
+    await this.userService.updateUserPswdReset(
+      getUser.userSno,
+      TrueFalseCodeEnum.isTemp,
+    );
+
+    const result = await this.emailVerService.sendVerCd(getUser.userSno);
+    return result;
+  }
+
+  @Post('/forgot-password/set-new-password')
+  @PublicDecorator()
+  async setNewPassword(@Body() user: UpdateUserDto) {
+    const getUserEmail = user.userEmail;
+    const getUser = await this.userService.findByEmail(getUserEmail);
+
+    if (!getUser) {
+      return new executeResponseDto(ResponseCodeEnum.noExistingData, 0);
+    } else if (getUser.userUseTf === 'T') {
+      return await this.userService.updateUserPswd(getUser.userSno, user);
+    }
+  }
 }

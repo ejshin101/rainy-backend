@@ -39,9 +39,9 @@ export class AuthController {
 
     if (!getUser) {
       return new executeResponseDto(ResponseCodeEnum.noExistingData, 0);
+    } else if (getUser.userUseTf === 'T') {
+      return await this.authService.signup(user);
     }
-
-    return await this.authService.signup(user);
   }
 
   @Get('/account/duplicates')

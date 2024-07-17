@@ -64,23 +64,12 @@ export class EmailVerService {
       .getRawOne();
   }
 
-  async update(sno: number): Promise<executeResponseDto> {
+  async update(email: SendEmailVerDto): Promise<executeResponseDto> {
     const now = new Date();
     const exprDtt = new Date(now.getTime() + 5 * 60 * 1000);
-    const emailVerCd = Math.floor(100000 + Math.random() * 900000).toString();
-    const userFind = await this.userService.find(sno);
-
-    await this.mailerService.sendMail({
-      to: userFind.userEmail,
-      subject: 'rainy green 인증번호',
-      template: 'auth-email',
-      context: {
-        emailVerCd: emailVerCd,
-      },
-    });
 
     const updateData = {
-      EMAIL_VER_CD: emailVerCd,
+      EMAIL_VER_CD: email.emailVerCd,
       EXPR_DTT: exprDtt,
     };
 
@@ -88,7 +77,7 @@ export class EmailVerService {
       .createQueryBuilder()
       .update(EmailVer)
       .set(updateData)
-      .where('USER_SNO = :sno', { sno })
+      .where('USER_SNO = :sno', { sno: email.userSno })
       .execute();
 
     return new executeResponseDto(ResponseCodeEnum.success, result.affected);
@@ -114,7 +103,14 @@ export class EmailVerService {
 
     const emailVerDto = new SendEmailVerDto(userFind.userSno, emailVerCd);
 
-    await this.create(emailVerDto);
+    const emailFind = await this.findByUserSno(userFind.userSno);
+
+    if (!emailFind) {
+      await this.create(emailVerDto);
+    } else {
+      await this.update(emailVerDto);
+    }
+
     return new executeResponseDto(ResponseCodeEnum.success, 1);
   }
 }
